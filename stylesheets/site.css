@@ -5,3 +5,20 @@ img {
 .content {
   color: #000000 !important;
 }
+
+.ais-Hits,
+.ais-Hits-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ais-Hits-item {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.ais-Pagination-link {
+  background-color: auto;
+}
