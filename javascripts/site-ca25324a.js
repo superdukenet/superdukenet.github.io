@@ -20,11 +20,15 @@ document.addEventListener("DOMContentLoaded", function (event) {
     instantsearch.widgets.searchBox({
       container: "#searchbox",
       placeholder: "Search...",
-      showReset: false,
+      showReset: true,
       showSubmit: false,
       cssClasses: {
+        form: "relative",
         input:
-          "w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500",
+          "w-full rounded-md border border-gray-300 px-4 pr-10 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500",
+        reset:
+          "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 focus:outline-none",
+        resetIcon: "w-4 h-4",
       },
     })
   );
@@ -56,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
             </div>
             <div class="text-xs text-gray-500 flex justify-between">
               <span>${postCount} post${postCount !== 1 ? "s" : ""}</span>
-              <span>Last post: ${lastPostTimestamp}</span>
             </div>
           </a>
         `;

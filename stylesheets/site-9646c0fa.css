@@ -1,0 +1,39 @@
+img {
+  width: 500px;
+}
+
+.content {
+  color: #000000 !important;
+}
+
+.ais-Hits,
+.ais-Hits-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ais-Hits-item {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.ais-Pagination-link {
+  background-color: auto;
+}
+
+/* Hide native clear (Chrome/Safari/Edge) */
+#searchbox input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* Old Edge/IE fallback (harmless elsewhere) */
+#searchbox input[type="search"]::-ms-clear,
+#searchbox input[type="search"]::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
