@@ -37,3 +37,8 @@ img {
   width: 0;
   height: 0;
 }
+
+.postlink {
+  text-decoration: underline;
+  color: #dc6b31;
+}
