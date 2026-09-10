@@ -197,7 +197,8 @@ h1 { font-size: 2.4rem; line-height: 1.2; letter-spacing: -.045em; font-weight: 
 .ais-SearchBox-form { position: relative; }
 .ais-SearchBox-form::before { content: ''; position: absolute; width: 11px; height: 11px; left: 15px; top: 13px; border: 1.6px solid #838e9a; border-radius: 50%; pointer-events: none; }
 .ais-SearchBox-form::after { content: ''; position: absolute; width: 5px; height: 1.6px; left: 25px; top: 25px; background: #838e9a; -webkit-transform: rotate(45deg); transform: rotate(45deg); pointer-events: none; }
-.ais-SearchBox-input { display: block; width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 8px; background: #f7f8fa; color: var(--ink); padding: 9px 34px 9px 38px; font-size: .875rem; }
+/* iOS zooms focused inputs when their text is smaller than 16px. */
+.ais-SearchBox-input { display: block; width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 8px; background: #f7f8fa; color: var(--ink); padding: 9px 34px 9px 38px; font-size: max(16px, 1rem); line-height: 1.25; }
 .ais-SearchBox-input::-webkit-input-placeholder { color: #79838e; }
 .ais-SearchBox-input::-moz-placeholder { color: #79838e; }
 .ais-SearchBox-input:-ms-input-placeholder { color: #79838e; }
