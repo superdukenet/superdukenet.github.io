@@ -1,112 +1,122 @@
-// This is where it all goes :)
+document.addEventListener('DOMContentLoaded', function () {
+  const container = document.getElementById('searchbox');
+  const panel = document.getElementById('hits');
+  const status = document.getElementById('search-status');
+  if (!container || !panel || !status) return;
 
-document.addEventListener("DOMContentLoaded", function (event) {
-  const btn = document.getElementById("mobile-menu-button");
-  const menu = document.getElementById("mobile-menu");
+  function unavailable() {
+    status.hidden = false;
+    panel.hidden = true;
+  }
 
-  btn.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
-  });
+  if (typeof instantsearch !== 'function' || typeof algoliasearch !== 'function') {
+    unavailable();
+    return;
+  }
 
-  const search = instantsearch({
-    indexName: "www_superdukenet_com_chbwurh18t_pages",
-    searchClient: algoliasearch(
-      "CHBWURH18T",
-      "7ca41a7286d6a58a7d6cf0d29038cb73"
-    ),
-  });
+  function escapeHTML(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+    });
+  }
 
-  search.addWidget(
-    instantsearch.widgets.searchBox({
-      container: "#searchbox",
-      placeholder: "Search...",
-      showReset: true,
-      showSubmit: false,
-      cssClasses: {
-        form: "relative",
-        input:
-          "w-full rounded-md border border-gray-300 px-4 pr-10 py-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500",
-        reset:
-          "absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 focus:outline-none",
-        resetIcon: "w-4 h-4",
-      },
-    })
-  );
-
-  search.addWidget(
-    instantsearch.widgets.hits({
-      container: "#hits-list",
-      cssClasses: {
-        list: "list-none m-0 p-0 flex flex-col",
-        item: "w-full",
-      },
-      templates: {
-        item(hit) {
-          const postCount = hit.posts.length;
-          const lastPost = hit.posts[postCount - 1];
-          const lastPostTimestamp = lastPost.timestamp
-            ? new Date(lastPost.timestamp).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })
-            : "Unknown";
-
-          return `
-          <a href="${hit.url || "#"}"
-             class="block px-4 py-3 text-sm hover:bg-gray-50 text-gray-800 border-b border-gray-100">
-            <div class="font-semibold mb-1">
-              ${instantsearch.highlight({ attribute: "title", hit })}
-            </div>
-            <div class="text-xs text-gray-500 flex justify-between">
-              <span>${postCount} post${postCount !== 1 ? "s" : ""}</span>
-            </div>
-          </a>
-        `;
-        },
-        empty: `
-        <div class="px-4 py-3 text-sm text-gray-500 italic">No results found</div>
-      `,
-      },
-      transformItems(items, { results }) {
-        if (!results.query) return [];
-        return items;
-      },
-    })
-  );
-
-  // Pagination widget — inside the same parent
-  search.addWidget(
-    instantsearch.widgets.pagination({
-      container: "#hits-pagination",
-      padding: 1,
-      cssClasses: {
-        root: "flex justify-center mt-2 pb-2",
-        list: "flex space-x-2",
-        item: "",
-        selectedItem: "font-bold bg-gray-200",
-        link: "px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm",
-      },
-    })
-  );
-
-  // Hide #hits until a query is entered
-  search.on("render", () => {
-    const hits = document.querySelector("#hits");
-    const query = search.helper?.state?.query?.trim();
-
-    hits.style.display = query ? "block" : "none";
-  });
-
-  search.start();
-
-  document.addEventListener("click", function (event) {
-    const searchbox = document.querySelector("#searchbox");
-    const hits = document.querySelector("#hits");
-
-    // If click is outside both search input and results container
-    if (!searchbox.contains(event.target) && !hits.contains(event.target)) {
-      hits.style.display = "none";
+  function archiveLink(value) {
+    try {
+      const url = new URL(value, window.location.origin);
+      if (!['https:', 'http:'].includes(url.protocol)) return null;
+      // Existing crawler records contain the live archive's absolute URLs.
+      // Keep those paths on this copy of the archive, including local previews.
+      if (url.origin !== window.location.origin && !['superdukenet.com', 'www.superdukenet.com', 'superdukenet.github.io'].includes(url.hostname)) return null;
+      return url.pathname + url.search + url.hash;
+    } catch (_error) {
+      return null;
     }
-  });
+  }
+
+  try {
+    let dismissed = false;
+    const search = instantsearch({
+      indexName: 'www_superdukenet_com_chbwurh18t_pages',
+      searchClient: algoliasearch('CHBWURH18T', '7ca41a7286d6a58a7d6cf0d29038cb73'),
+    });
+
+    search.addWidgets([
+      instantsearch.widgets.searchBox({
+        container: '#searchbox',
+        placeholder: 'Search the forum archive…',
+        showReset: true,
+        showSubmit: false,
+      }),
+      instantsearch.widgets.configure({ hitsPerPage: 6 }),
+      instantsearch.widgets.hits({
+        container: '#hits-list',
+        templates: {
+          item: function (hit) {
+            const path = archiveLink(hit.url);
+            const count = Array.isArray(hit.posts) ? hit.posts.length : null;
+            const body = '<strong>' + escapeHTML(hit.title || 'Untitled discussion') + '</strong>' +
+              (count === null ? '' : '<span>' + count.toLocaleString() + ' post' + (count === 1 ? '' : 's') + '</span>');
+            return path ? '<a class="search-hit" href="' + escapeHTML(path) + '">' + body + '</a>' : '<div class="search-hit">' + body + '</div>';
+          },
+          empty: '<p class="search-empty">No discussions found. Try a different word or browse the forum index.</p>',
+        },
+        transformItems: function (items, context) {
+          return context.results.query ? items : [];
+        },
+      }),
+      instantsearch.widgets.pagination({
+        container: '#hits-pagination',
+        padding: 1,
+        showFirst: false,
+        showLast: false,
+      }),
+    ]);
+
+    search.on('render', function () {
+      const input = container.querySelector('input');
+      if (input) {
+        input.setAttribute('aria-label', 'Search the forum archive');
+        input.setAttribute('aria-controls', 'hits');
+      }
+      const hasQuery = Boolean(search.helper && search.helper.state.query.trim());
+      panel.hidden = !hasQuery || dismissed;
+      status.hidden = true;
+    });
+    search.on('error', unavailable);
+    search.start();
+
+    container.addEventListener('input', function () { dismissed = false; });
+    container.addEventListener('focusin', function () {
+      dismissed = false;
+      if (search.helper && search.helper.state.query.trim() && status.hidden) panel.hidden = false;
+    });
+    document.getElementById('close-search').addEventListener('click', function () {
+      const input = container.querySelector('input');
+      if (input) input.focus();
+      dismissed = true;
+      panel.hidden = true;
+    });
+    document.addEventListener('click', function (event) {
+      if (!container.parentElement.contains(event.target)) {
+        dismissed = true;
+        panel.hidden = true;
+      }
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !panel.hidden) {
+        const input = container.querySelector('input');
+        if (input) input.focus();
+        dismissed = true;
+        panel.hidden = true;
+      }
+    });
+    container.parentElement.addEventListener('focusout', function (event) {
+      if (event.relatedTarget && !container.parentElement.contains(event.relatedTarget)) {
+        dismissed = true;
+        panel.hidden = true;
+      }
+    });
+  } catch (_error) {
+    unavailable();
+  }
 });
