@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
               (count === null ? '' : '<span>' + count.toLocaleString() + ' post' + (count === 1 ? '' : 's') + '</span>');
             return path ? '<a class="search-hit" href="' + escapeHTML(path) + '">' + body + '</a>' : '<div class="search-hit">' + body + '</div>';
           },
-          empty: '<p class="search-empty">No discussions found. Try a different word or browse the forum index.</p>',
+          empty: '<p class="search-empty">No discussions found. Try a different word or browse the forums.</p>',
         },
         transformItems: function (items, context) {
           return context.results.query ? items : [];
